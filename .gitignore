@@ -52,3 +52,7 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+.idea/
+.vscode/
+./rinha-backend-2025/.idea/
