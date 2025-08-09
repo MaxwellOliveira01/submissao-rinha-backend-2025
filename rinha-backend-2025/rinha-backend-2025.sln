@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rinha-backend-2025", "rinha-backend-2025\rinha-backend-2025.csproj", "{F1FE9D16-804E-43A4-910F-30CF15EC38FF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FAA3CC24-5BB4-4E0F-8694-9DE56ADF3CC3}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F1FE9D16-804E-43A4-910F-30CF15EC38FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1FE9D16-804E-43A4-910F-30CF15EC38FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1FE9D16-804E-43A4-910F-30CF15EC38FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1FE9D16-804E-43A4-910F-30CF15EC38FF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
