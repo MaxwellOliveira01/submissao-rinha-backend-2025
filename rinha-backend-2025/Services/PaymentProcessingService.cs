@@ -2,7 +2,10 @@ using rinha_backend_2025.Api;
 
 namespace rinha_backend_2025.Services;
 
-public class PaymentProcessingService(ILogger<PaymentProcessingService> logger) {
+public class PaymentProcessingService(
+    PaymentStatisticsService paymentStatisticsService,
+    ILogger<PaymentProcessingService> logger
+) {
 
     private readonly HttpClient _defaultClient = new() {
         BaseAddress = new Uri(Environment.GetEnvironmentVariable("PROCESSOR_DEFAULT_URL")!)
@@ -16,6 +19,8 @@ public class PaymentProcessingService(ILogger<PaymentProcessingService> logger) 
         logger.LogInformation("Processing payment request: {CorrelationId}", paymentRequest.CorrelationId);
 
         if (await ProcessPaymentAsync(_defaultClient, paymentRequest)) {
+            logger.LogInformation("Payment request processed successfully with default processor");
+            await paymentStatisticsService.AddPaymentToDefaultAsync(paymentRequest);
             return;
         }
         
@@ -23,10 +28,12 @@ public class PaymentProcessingService(ILogger<PaymentProcessingService> logger) 
             paymentRequest.CorrelationId);
 
         if (await ProcessPaymentAsync(_fallbackClient, paymentRequest)) {
+            logger.LogInformation("Payment request processed successfully with fallback processor");
+            await paymentStatisticsService.AddPaymentToFallbackAsync(paymentRequest);
             return;
         }
     
-        logger.LogError("Both payment processors failed for request: {CorrelationId}", paymentRequest.CorrelationId);
+        logger.LogWarning("Both payment processors failed for request: {CorrelationId}", paymentRequest.CorrelationId);
 
     }
 

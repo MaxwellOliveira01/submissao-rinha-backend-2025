@@ -20,7 +20,7 @@ public class PaymentsController(
 
     [HttpGet("payments-summary")]
     public async Task<PaymentSummary> GetSummary(DateTimeOffset from, DateTimeOffset to) {
-        return paymentStatisticsService.GetPaymentSummary(from, to);
+        return await paymentStatisticsService.GetPaymentSummary(from, to);
     }
     
 }
