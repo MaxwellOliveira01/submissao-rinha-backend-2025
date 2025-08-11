@@ -51,8 +51,8 @@
     deploy:
       resources:
         limits:
-          cpus: "0.25"
-          memory: "275MB"
+          cpus: "0.35"
+          memory: "135MB"
         
 networks:
   backend:
