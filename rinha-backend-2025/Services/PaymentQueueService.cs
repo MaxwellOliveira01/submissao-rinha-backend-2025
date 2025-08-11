@@ -12,7 +12,7 @@ public class PaymentQueueService(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
         logger.LogInformation("PaymentQueueService started");
 
-        var workersCount = 5; // todo: get from environment
+        var workersCount = 10; // todo: get from environment
         var tasks = new List<Task>();
 
         for (var i = 0; i < workersCount; i++) {
@@ -20,7 +20,7 @@ public class PaymentQueueService(
             tasks.Add(Task.Run(async () => {
                 while (await paymentChannel.Reader.WaitToReadAsync(stoppingToken)) {
                     var request = await paymentChannel.Reader.ReadAsync(stoppingToken);
-                    logger.LogInformation("Worker [{WorkerId}]: Read request: {Request}", workerId, request.CorrelationId);
+                    // logger.LogInformation("Worker [{WorkerId}]: Read request: {Request}", workerId, request.CorrelationId);
                     await paymentProcessingService.ProcessAsync(request);
                 }    
             }, stoppingToken));

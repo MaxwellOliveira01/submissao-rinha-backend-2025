@@ -1,9 +1,11 @@
+using System.Threading.Channels;
 using rinha_backend_2025.Api;
 
 namespace rinha_backend_2025.Services;
 
 public class PaymentProcessingService(
     PaymentStatisticsService paymentStatisticsService,
+    Channel<PaymentRequest> paymentChannel,
     ILogger<PaymentProcessingService> logger
 ) {
 
@@ -16,24 +18,25 @@ public class PaymentProcessingService(
     };
     
     public async Task ProcessAsync(PaymentRequest paymentRequest) {
-        logger.LogInformation("Processing payment request: {CorrelationId}", paymentRequest.CorrelationId);
+        // logger.LogInformation("Processing payment request: {CorrelationId}", paymentRequest.CorrelationId);
 
         if (await ProcessPaymentAsync(_defaultClient, paymentRequest)) {
-            logger.LogInformation("Payment request processed successfully with default processor");
+            // logger.LogInformation("Payment request processed successfully with default processor");
             await paymentStatisticsService.AddPaymentToDefaultAsync(paymentRequest);
             return;
         }
         
-        logger.LogWarning("Default payment processor failed, trying fallback processor for request: {CorrelationId}", 
-            paymentRequest.CorrelationId);
+        // logger.LogWarning("Default payment processor failed, trying fallback processor for request: {CorrelationId}", 
+            // paymentRequest.CorrelationId);
 
-        if (await ProcessPaymentAsync(_fallbackClient, paymentRequest)) {
-            logger.LogInformation("Payment request processed successfully with fallback processor");
-            await paymentStatisticsService.AddPaymentToFallbackAsync(paymentRequest);
-            return;
-        }
+        // if (await ProcessPaymentAsync(_fallbackClient, paymentRequest)) {
+            // logger.LogInformation("Payment request processed successfully with fallback processor");
+            // await paymentStatisticsService.AddPaymentToFallbackAsync(paymentRequest);
+            // return;
+        // }
     
-        logger.LogWarning("Both payment processors failed for request: {CorrelationId}", paymentRequest.CorrelationId);
+        // logger.LogWarning("Both payment processors failed for request: {CorrelationId}", paymentRequest.CorrelationId);
+        await paymentChannel.Writer.WriteAsync(paymentRequest);
 
     }
 
