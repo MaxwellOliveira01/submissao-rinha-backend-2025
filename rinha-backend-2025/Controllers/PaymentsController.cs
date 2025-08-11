@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Mvc;
 using rinha_backend_2025.Api;
 using rinha_backend_2025.Services;
@@ -5,19 +6,15 @@ using rinha_backend_2025.Services;
 namespace rinha_backend_2025.Controllers;
 
 [ApiController]
-public class PaymentsController : ControllerBase {
-
-    private readonly IPaymentProcessingService paymentProcessingService;
-    private readonly IPaymentStatisticsService paymentStatisticsService;
-    
-    public PaymentsController(IPaymentProcessingService paymentProcessingService, IPaymentStatisticsService paymentStatisticsService) {
-        this.paymentProcessingService = paymentProcessingService;
-        this.paymentStatisticsService = paymentStatisticsService;
-    }
+public class PaymentsController(
+    PaymentStatisticsService paymentStatisticsService,
+    Channel<PaymentRequest> paymentChannel
+) : ControllerBase {
 
     [HttpPost("payments")]
     public async Task<IActionResult> ProcessPayment(PaymentRequest request) {
-        await paymentProcessingService.ProcessPaymentAsync(request);
+        request.RequestedAt = DateTimeOffset.Now;
+        await paymentChannel.Writer.WriteAsync(request);
         return Ok();
     }
 

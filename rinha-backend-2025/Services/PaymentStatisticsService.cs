@@ -2,13 +2,7 @@ using rinha_backend_2025.Api;
 
 namespace rinha_backend_2025.Services;
 
-public interface IPaymentStatisticsService {
-    void AddToDefault(PaymentRequest paymentRequest);
-    // void AddToFallback(double amount);
-    PaymentSummary GetPaymentSummary(DateTimeOffset from, DateTimeOffset to);
-}
-
-public class PaymentStatisticsService : IPaymentStatisticsService {
+public class PaymentStatisticsService {
 
     // private PaymentSummaryItem defaultSummary = new();
 
