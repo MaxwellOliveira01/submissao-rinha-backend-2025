@@ -11,13 +11,13 @@ public class PaymentStatisticsService(
 
     private readonly IDatabase _redisDatabase = redis.GetDatabase();
 
-    public async Task AddPaymentToDefaultAsync(PaymentRequest paymentRequest)
-        => await AddPayment(paymentRequest, "default"); // TODO: criar uma enum
+    public void AddPaymentToDefault(PaymentRequest paymentRequest)
+        => AddPayment(paymentRequest, "default"); // TODO: criar uma enum
     
-    public async Task AddPaymentToFallbackAsync(PaymentRequest paymentRequest) 
-        => await AddPayment(paymentRequest, "fallback");
+    public void AddPaymentToFallback(PaymentRequest paymentRequest) 
+        => AddPayment(paymentRequest, "fallback");
     
-    private async Task AddPayment(PaymentRequest paymentRequest, string processorKey) {
+    private void AddPayment(PaymentRequest paymentRequest, string processorKey) {
         var statistic = new PaymentStatistic {
             CorrelationId = paymentRequest.CorrelationId,
             Amount = paymentRequest.Amount,
@@ -25,8 +25,8 @@ public class PaymentStatisticsService(
         };
         
         var json = JsonSerializer.Serialize(statistic);
-        
-        await _redisDatabase.SortedSetAddAsync("payments", json, paymentRequest.RequestedAt.Ticks);
+
+        _redisDatabase.SortedSetAddAsync("payments", json, paymentRequest.RequestedAt.Ticks);
     }
     
     public async Task<PaymentSummary> GetPaymentSummary(DateTimeOffset from, DateTimeOffset to) {
@@ -70,7 +70,7 @@ public class PaymentStatisticsService(
 
     }
 
-    private class PaymentStatistic {
+    private class PaymentStatistic {    
         public Guid CorrelationId { get; set; }
         public double Amount { get; set; } = 0.0;
         public string Processor { get; set; } = string.Empty;

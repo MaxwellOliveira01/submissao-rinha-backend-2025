@@ -6,20 +6,21 @@ using StackExchange.Redis;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddScoped<PaymentProcessingService>();
+
+builder.Services.AddTransient<PaymentProcessingService>();
 
 builder.Services.AddSingleton<PaymentStatisticsService>();
 builder.Services.AddSingleton<PaymentProcessingService>();
 
-builder.Services.AddSingleton<Channel<PaymentRequest>>(
-    _ => Channel.CreateUnbounded<PaymentRequest>(new UnboundedChannelOptions {
-        SingleReader = false,
-        SingleWriter = false,
-        AllowSynchronousContinuations = false, 
-    })
-);
+// builder.Services.AddSingleton<Channel<PaymentRequest>>(
+//     _ => Channel.CreateUnbounded<PaymentRequest>(new UnboundedChannelOptions {
+//         SingleReader = false,
+//         SingleWriter = false,
+//         AllowSynchronousContinuations = false, 
+//     })
+// );
 
-builder.Services.AddHostedService<PaymentQueueService>();
+builder.Services.AddHostedService<QueueWorker>();
 
 var redisUrl = Environment.GetEnvironmentVariable("REDIS_URL");
 if (string.IsNullOrEmpty(redisUrl)) {

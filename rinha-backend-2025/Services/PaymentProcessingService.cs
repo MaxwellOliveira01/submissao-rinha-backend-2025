@@ -1,11 +1,14 @@
+using System.Text.Json;
 using System.Threading.Channels;
 using rinha_backend_2025.Api;
+using StackExchange.Redis;
 
 namespace rinha_backend_2025.Services;
 
 public class PaymentProcessingService(
     PaymentStatisticsService paymentStatisticsService,
-    Channel<PaymentRequest> paymentChannel,
+    //Channel<PaymentRequest> paymentChannel,
+    IConnectionMultiplexer redis,
     ILogger<PaymentProcessingService> logger
 ) {
 
@@ -17,26 +20,37 @@ public class PaymentProcessingService(
         BaseAddress = new Uri(Environment.GetEnvironmentVariable("PROCESSOR_FALLBACK_URL")!)
     };
     
-    public async Task ProcessAsync(PaymentRequest paymentRequest) {
+    public async Task ProcessAsync(string message) {
+        var paymentRequest = JsonSerializer.Deserialize<PaymentRequest>(message);
+
+        if (paymentRequest == null) {
+            logger.LogWarning("Received null payment request message: {Message}", message);
+            return;
+        }
+        
         // logger.LogInformation("Processing payment request: {CorrelationId}", paymentRequest.CorrelationId);
 
-        if (await ProcessPaymentAsync(_defaultClient, paymentRequest)) {
+        if (await ProcessPaymentAsync(_defaultClient, paymentRequest!)) {
             // logger.LogInformation("Payment request processed successfully with default processor");
-            await paymentStatisticsService.AddPaymentToDefaultAsync(paymentRequest);
+            paymentStatisticsService.AddPaymentToDefault(paymentRequest!);
             return;
         }
         
         // logger.LogWarning("Default payment processor failed, trying fallback processor for request: {CorrelationId}", 
             // paymentRequest.CorrelationId);
 
-        // if (await ProcessPaymentAsync(_fallbackClient, paymentRequest)) {
+        // if (await ProcessPaymentAsync(_fallbackClient, paymentRequest!)) {
             // logger.LogInformation("Payment request processed successfully with fallback processor");
-            // await paymentStatisticsService.AddPaymentToFallbackAsync(paymentRequest);
-            // return;
+             // paymentStatisticsService.AddPaymentToFallback(paymentRequest!);
+             // return;
         // }
     
         // logger.LogWarning("Both payment processors failed for request: {CorrelationId}", paymentRequest.CorrelationId);
-        await paymentChannel.Writer.WriteAsync(paymentRequest);
+        // await paymentChannel.Writer.WriteAsync(paymentRequest);
+
+        var db = redis.GetDatabase();
+        await db.ListRightPushAsync("fila", message)
+            .ConfigureAwait(continueOnCapturedContext: false);
 
     }
 
