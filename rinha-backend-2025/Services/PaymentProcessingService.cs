@@ -7,7 +7,6 @@ namespace rinha_backend_2025.Services;
 
 public class PaymentProcessingService(
     PaymentStatisticsService paymentStatisticsService,
-    //Channel<PaymentRequest> paymentChannel,
     IConnectionMultiplexer redis,
     ILogger<PaymentProcessingService> logger
 ) {
@@ -32,7 +31,7 @@ public class PaymentProcessingService(
 
         if (await ProcessPaymentAsync(_defaultClient, paymentRequest!)) {
             // logger.LogInformation("Payment request processed successfully with default processor");
-            paymentStatisticsService.AddPaymentToDefault(paymentRequest!);
+            await paymentStatisticsService.AddPaymentToDefaultAsync(paymentRequest!);
             return;
         }
         

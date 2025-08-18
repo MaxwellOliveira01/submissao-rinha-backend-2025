@@ -11,7 +11,6 @@ namespace rinha_backend_2025.Controllers;
 public class PaymentsController(
     PaymentStatisticsService paymentStatisticsService,
     IConnectionMultiplexer redis
-    // Channel<PaymentRequest> paymentChannel
 ) : ControllerBase {
 
     private readonly IDatabase db = redis.GetDatabase();
@@ -21,7 +20,6 @@ public class PaymentsController(
         request.RequestedAt = DateTimeOffset.Now;
         var json = JsonSerializer.Serialize(request);
         await db.ListRightPushAsync("fila", json); // pegar do environment
-        // await paymentChannel.Writer.WriteAsync(request);
         return Ok();
     }
 

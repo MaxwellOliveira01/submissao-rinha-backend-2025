@@ -9,71 +9,61 @@ public class PaymentStatisticsService(
     ILogger<PaymentStatisticsService> logger 
 ) {
 
+    private const string DefaultKey = "default";
+    private const string FallbackKey = "fallback";
+
     private readonly IDatabase _redisDatabase = redis.GetDatabase();
 
-    public void AddPaymentToDefault(PaymentRequest paymentRequest)
-        => AddPayment(paymentRequest, "default"); // TODO: criar uma enum
+    public async Task AddPaymentToDefaultAsync(PaymentRequest paymentRequest)
+        => await AddPaymentAsync(paymentRequest, DefaultKey);
     
-    public void AddPaymentToFallback(PaymentRequest paymentRequest) 
-        => AddPayment(paymentRequest, "fallback");
+    public async Task AddPaymentToFallbackAsync(PaymentRequest paymentRequest) 
+        => await AddPaymentAsync(paymentRequest, FallbackKey);
     
-    private void AddPayment(PaymentRequest paymentRequest, string processorKey) {
+    private async Task AddPaymentAsync(PaymentRequest paymentRequest, string processorKey) {
         var statistic = new PaymentStatistic {
             CorrelationId = paymentRequest.CorrelationId,
             Amount = paymentRequest.Amount,
-            Processor = processorKey
         };
         
         var json = JsonSerializer.Serialize(statistic);
 
-        _redisDatabase.SortedSetAddAsync("payments", json, paymentRequest.RequestedAt.Ticks);
+        await _redisDatabase.SortedSetAddAsync(processorKey, json, paymentRequest.RequestedAt.Ticks);
     }
     
     public async Task<PaymentSummary> GetPaymentSummary(DateTimeOffset from, DateTimeOffset to) {
         var fromTicks = from.Ticks;
         var toTicks = to.Ticks;
 
-        var payments = await _redisDatabase
-            .SortedSetRangeByScoreAsync("payments", fromTicks, toTicks);
+        var defaultPayments = FetchPaymentsAsync(DefaultKey, fromTicks, toTicks);
+        var fallbackPayments = FetchPaymentsAsync(FallbackKey, fromTicks, toTicks);
 
-        PaymentSummaryItem defaultProcessor = new();
-        PaymentSummaryItem fallbackProcessor = new();
-        
-        foreach (var paymentRaw in payments) {
-
-            if (string.IsNullOrEmpty(paymentRaw)) {
-                continue; // should not happen
-            }
-            
-            var payment = JsonSerializer.Deserialize<PaymentStatistic>(paymentRaw!);
-            
-            switch (payment!.Processor) {
-                case "default":
-                    defaultProcessor.TotalAmount += payment.Amount;
-                    defaultProcessor.TotalRequests++;
-                    break;
-                case "fallback":
-                    fallbackProcessor.TotalAmount += payment.Amount;
-                    fallbackProcessor.TotalRequests++;
-                    break;
-                default:
-                    logger.LogWarning("Unknown processor type: {Processor}", payment.Processor);
-                    break;
-            }
-            
-        }
+        await Task.WhenAll(defaultPayments, fallbackPayments);
 
         return new PaymentSummary {
-            Default = defaultProcessor,
-            Fallback = fallbackProcessor
+            Default = defaultPayments.Result,
+            Fallback = fallbackPayments.Result,
         };
-
     }
 
+    private async Task<PaymentSummaryItem> FetchPaymentsAsync(string queueName, long from, long to) {
+        var payments = await _redisDatabase
+            .SortedSetRangeByScoreAsync(queueName, from, to);
+
+        return new PaymentSummaryItem {
+            TotalRequests = payments.Length,
+            TotalAmount = payments.Select(p => GetAmount(p!)).Sum()
+        };
+    }
+
+    private static double GetAmount(string message) {
+        var payment = JsonSerializer.Deserialize<PaymentStatistic>(message);
+        return payment?.Amount ?? 0.0;
+    }
+    
     private class PaymentStatistic {    
         public Guid CorrelationId { get; set; }
         public double Amount { get; set; } = 0.0;
-        public string Processor { get; set; } = string.Empty;
     }
     
 }
