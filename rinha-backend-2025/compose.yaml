@@ -15,16 +15,16 @@
     deploy:
         resources:
             limits:
-              cpus: "0.15"
+              cpus: "0.1"
               memory: "15MB"
-  api1: &api
-    image: rinha
+  api1:
+    image: maxwelloliveira01/rinha:latest
     hostname: api
     environment:
       - PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
       - REDIS_URL=redis:6379
-      - SERVER_ID=1
+      - WORKERS_COUNT=8
     networks:
       - backend
       - payment-processor
@@ -34,14 +34,22 @@
           cpus: "0.5"
           memory: "100MB"
   api2:
-    <<: *api
+    image: maxwelloliveira01/rinha:latest
     hostname: api2
     environment:
       - PROCESSOR_DEFAULT_URL=http://payment-processor-fallback:8080
       - PROCESSOR_FALLBACK_URL=http://payment-processor-default:8080
       - REDIS_URL=redis:6379
-      - SERVER_ID=2
-  
+      - WORKERS_COUNT=8
+    networks:
+        - backend
+        - payment-processor
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "100MB"
+
   redis:
     image: redis:7.2-alpine
     container_name: rinha-redis
@@ -51,7 +59,7 @@
     deploy:
       resources:
         limits:
-          cpus: "0.35"
+          cpus: "0.4"
           memory: "135MB"
         
 networks:

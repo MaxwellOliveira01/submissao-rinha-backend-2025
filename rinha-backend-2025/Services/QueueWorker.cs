@@ -16,7 +16,7 @@ public class QueueWorker(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
         logger.LogInformation("PaymentQueueService started");
 
-        var workersCount = 10; // todo: get from environment
+        var workersCount = int.Parse(Environment.GetEnvironmentVariable("WORKERS_COUNT") ?? "10");
         var workers = new Task[workersCount];
         
         for (var i = 0; i < workersCount; i++) {
