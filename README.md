@@ -7,7 +7,7 @@ O desafio dessa edição da rinha consistia em construir uma api que recebesse r
 - Cada processador cobra uma taxa em cima do valor do pagamento, sendo que a taxa do fallback é o dobro da taxa do default
 - Assim que o teste encerra, todos os pagamentos não processados não são mais contabilizados.
 
-O desafio também possui regras como: sua aplicação deve ter no mínimo duas instâncias, utilizad no maximo 350mb de memória e 1.5 de CPU.
+O desafio também possui regras como: sua aplicação deve ter no mínimo duas instâncias, utilizar no maximo 350mb de memória e 1.5 de CPU.
 
 Além disso tudo, a api precisa implementar uma rota que retorne estatísticas dos pagamentos. Isso é, dizer, para cada processador, quantos pagamentos foram realizados lá e o valor total acumulado.
 
