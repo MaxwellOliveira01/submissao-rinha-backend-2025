@@ -23,9 +23,9 @@ O projeto foi feito usando C# / .NET, Redis e Nginx, descreveremos melhor a idei
 
 - Quando uma requisição chega, o pagamento é colocado em uma fila do Redis (que é compartilhada entre as 2 instancias) e um sucesso é retornado. Note que o pagamento ainda não foi realmente processado, apenas enfileirado. A ideia neste ponto é responder rapidamente com um 200.
 - Após ser enfileirado, existe um serviço e alguns workers com objetivo de tirar da fila e processar. Eles tentam processar e, caso dê errado, enfileiram novamente.
-- Quando um pagamento for ser processado, a preferência é sempre do processador default. Se ele estiver fora do ar, o dado é reenfileirado para tentar novamente*.
+- Quando um pagamento for ser processado, a preferência é sempre do processador default. Se ele estiver fora do ar, o dado é reenfileirado para tentar novamente**.
 
-* Essa foi a estratégia que, durante os testes, mais trouxe benefício. Outras estratégias como "usar o default e, se nao der, usa o fallback" trouxeram resultado um pouco inferior.
+** Essa foi a estratégia que, durante os testes, mais trouxe benefício. Outras estratégias como "usar o default e, se nao der, usa o fallback" trouxeram resultado um pouco inferior.
 
 O Nginx foi usado como Load balancer entre as instâncias para dividir igualmente os requests entre as instâncias.
 
