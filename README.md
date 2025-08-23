@@ -35,4 +35,7 @@ O Redis foi utilizado de duas formas:
 
 ## Resultado
 
-No teste final essa solução ficou trouxe um resultado interessante, garantindo o 21o lugar dentre mais de 300 participantes. O ranking final pode ser encontrado [aqui](https://github.com/zanfranceschi/rinha-de-backend-2025/blob/main/RESULTADOS_FINAIS.md)
+No teste final essa solução ficou trouxe um resultado interessante, garantindo o 21o lugar dentre mais de 300 participantes. 
+<img width="913" height="856" alt="image" src="https://github.com/user-attachments/assets/ebac5507-57fa-48c3-a7c4-963697f0acd0" />
+
+O ranking final pode ser encontrado [aqui](https://github.com/zanfranceschi/rinha-de-backend-2025/blob/main/RESULTADOS_FINAIS.md)
